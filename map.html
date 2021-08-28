@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <title>Australia's Electoral Boundaries</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+    integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+    crossorigin="" />
+
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+    integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+    crossorigin=""></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-ajax/2.1.0/leaflet.ajax.min.js" crossorigin=""></script>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-search@2.3.7/dist/leaflet-search.src.css" />
+  <script src="https://unpkg.com/leaflet-search@2.3.7/dist/leaflet-search.src.js"></script>
+
+</head>
+
+<style>
+  #mapid {
+    height: 97vh;
+  }
+
+  .info {
+    padding: 6px 8px;
+
+    font: 14px/16px Arial, Helvetica, sans-serif;
+    background: white;
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+  }
+
+  .info h4 {
+    margin: 0 0 5px;
+    color: #777;
+  }
+</style>
+
+<body>
+  <div id="mapid"></div>
+</body>
+
+<script>
+
+  var currentLayer;
+  var currentSearch;
+
+  var map = L.map('mapid', {
+    center: [-27.483903, 153.029474],
+    zoom: 12
+  });
+  map.zoomControl.setPosition('bottomright');
+
+  var tileLayerDark = L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>'
+  });
+
+  var tileLayerLight = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>'
+  });
+
+  var tileLayerOSM = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(map);
+
+  var baseMaps = {
+    "Dark": tileLayerDark,
+    "Light": tileLayerLight,
+    "Medium": tileLayerOSM
+  };
+
+  L.control.layers(baseMaps, null, { collapsed: false, position: 'topleft' }).addTo(map);
+
+  function style(c) {
+    return {
+      fillColor: c,
+      weight: 2,
+      opacity: 1,
+      color: 'white',
+      dashArray: '3',
+      fillOpacity: 0.5
+    };
+  }
+
+  function highlightFeature(e) {
+    var layer = e.target;
+
+    layer.setStyle({
+      weight: 5,
+      color: '#666',
+      dashArray: '',
+      fillOpacity: 0.7
+    });
+
+    if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+      layer.bringToFront();
+    }
+    info.update(layer.feature.properties);
+  }
+
+  function resetHighlight(e) {
+    currentLayer.resetStyle(e.target);
+    info.update();
+  }
+
+  function zoomToFeature(e) {
+    map.fitBounds(e.target.getBounds());
+  }
+
+
+  function onEachFeature(feature, layer) {
+    layer.on({
+      mouseover: highlightFeature,
+      mouseout: resetHighlight,
+      click: zoomToFeature
+    });
+
+    layer.bindTooltip(
+      feature.properties.Name,
+      {
+        permanent: true,
+        direction: 'center',
+        className: 'countryLabel'
+      }
+    );
+  }
+
+  var empty = new L.tileLayer('');
+  var sed_qld_2017 = new L.GeoJSON.AJAX("https://raw.githubusercontent.com/jwood74/geographic_boundaries/main/au/sed/sed_qld/sed_qld_2017/sed_qld_2017.geojson", { style: style('red'), onEachFeature: onEachFeature });
+  var ced_2019 = new L.GeoJSON.AJAX("https://raw.githubusercontent.com/jwood74/geographic_boundaries/main/au/ced/ced_2019/ced_2019.geojson", { style: style('blue'), onEachFeature: onEachFeature });
+
+  var qld_search = new L.Control.Search({ layer: sed_qld_2017, propertyName: 'Name' });
+  var ced_search = new L.Control.Search({ layer: ced_2019, propertyName: 'Name' });
+
+  var overlayMaps = {
+    "Clear": empty,
+    "Qld 2017": sed_qld_2017,
+    "AU 2019": ced_2019
+  };
+
+  L.control.layers(overlayMaps, null, { collapsed: false, position: 'topleft' }).addTo(map);
+
+  var info = L.control();
+
+  info.onAdd = function (map) {
+    this._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"
+    this.update();
+    return this._div;
+  };
+
+  // method that we will use to update the control based on feature properties passed
+  info.update = function (props) {
+    this._div.innerHTML = '<h4>Electorate</h4>' + (props ?
+      '<b>' + props.Name + '</b>'
+      : 'Hover over an Electorate');
+  };
+
+  info.addTo(map);
+
+  function clearCurrentSearch(current) {
+    if (current) {
+      map.removeControl(current);
+    };
+  }
+
+  map.on('baselayerchange', function (eventLayer) {
+
+    // if (currentSearch) {
+    //   map.removeControl(currentSearch);
+    // }
+
+    var theLayer = eventLayer.name;
+
+    switch (theLayer) {
+      case 'Qld 2017':
+        clearCurrentSearch(currentSearch)
+        currentLayer = sed_qld_2017;
+        currentSearch = qld_search
+        map.addControl(currentSearch);
+        break;
+      case 'AU 2019':
+        clearCurrentSearch(currentSearch)
+        currentLayer = ced_2019;
+        currentSearch = ced_search
+        map.addControl(currentSearch);
+        break;
+      case 'Clear':
+        clearCurrentSearch(currentSearch)
+        currentLayer = null
+    }
+  });
+
+</script>
+
+</html>
