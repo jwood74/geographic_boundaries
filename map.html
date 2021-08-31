@@ -132,14 +132,17 @@
 
   var empty = new L.tileLayer('');
   var sed_qld_2017 = new L.GeoJSON.AJAX("https://raw.githubusercontent.com/jwood74/geographic_boundaries/main/au/sed/sed_qld/sed_qld_2017/sed_qld_2017.geojson", { style: style('red'), onEachFeature: onEachFeature });
+  var sed_vic_2014 = new L.GeoJSON.AJAX("https://raw.githubusercontent.com/jwood74/geographic_boundaries/main/au/sed/sed_vic/sed_vic_2014/sed_vic_2014.geojson", { style: style('red'), onEachFeature: onEachFeature });
   var ced_2019 = new L.GeoJSON.AJAX("https://raw.githubusercontent.com/jwood74/geographic_boundaries/main/au/ced/ced_2019/ced_2019.geojson", { style: style('blue'), onEachFeature: onEachFeature });
 
   var qld_search = new L.Control.Search({ layer: sed_qld_2017, propertyName: 'Name' });
+  var vic_search = new L.Control.Search({ layer: sed_vic_2014, propertyName: 'Name' });
   var ced_search = new L.Control.Search({ layer: ced_2019, propertyName: 'Name' });
 
   var overlayMaps = {
     "Clear": empty,
     "Qld 2017": sed_qld_2017,
+    "Vic 2014": sed_vic_2014,
     "AU 2019": ced_2019
   };
 
@@ -148,12 +151,11 @@
   var info = L.control();
 
   info.onAdd = function (map) {
-    this._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"
+    this._div = L.DomUtil.create('div', 'info');
     this.update();
     return this._div;
   };
 
-  // method that we will use to update the control based on feature properties passed
   info.update = function (props) {
     this._div.innerHTML = '<h4>Electorate</h4>' + (props ?
       '<b>' + props.Name + '</b>'
@@ -170,10 +172,6 @@
 
   map.on('baselayerchange', function (eventLayer) {
 
-    // if (currentSearch) {
-    //   map.removeControl(currentSearch);
-    // }
-
     var theLayer = eventLayer.name;
 
     switch (theLayer) {
@@ -181,6 +179,12 @@
         clearCurrentSearch(currentSearch)
         currentLayer = sed_qld_2017;
         currentSearch = qld_search
+        map.addControl(currentSearch);
+        break;
+      case 'Vic 2014':
+        clearCurrentSearch(currentSearch)
+        currentLayer = sed_vic_2014;
+        currentSearch = vic_search
         map.addControl(currentSearch);
         break;
       case 'AU 2019':
