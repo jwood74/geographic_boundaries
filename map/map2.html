@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <title>Australia's Electoral Boundaries</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+    integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+    crossorigin="" />
+
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+    integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+    crossorigin=""></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-ajax/2.1.0/leaflet.ajax.min.js" crossorigin=""></script>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-search@2.3.7/dist/leaflet-search.src.css" />
+  <script src="https://unpkg.com/leaflet-search@2.3.7/dist/leaflet-search.src.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
+
+  <script src="functions.js"> </script>
+
+</head>
+
+<body>
+  <div id="mapid"></div>
+</body>
+
+<script>
+
+  var currentLayer;
+  var layers = [];
+  var currentSearch;
+
+  var map = L.map('mapid', {
+    center: [-27.483903, 153.029474],
+    zoom: 12
+  });
+  map.zoomControl.setPosition('bottomright');
+
+  var tileLayerDark = L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>'
+  });
+
+  var tileLayerLight = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>'
+  });
+
+  var tileLayerOSM = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(map);
+
+  var baseMaps = {
+    "Dark": tileLayerDark,
+    "Light": tileLayerLight,
+    "Medium": tileLayerOSM
+  };
+
+  L.control.layers(baseMaps, null, { collapsed: false, position: 'topleft' }).addTo(map);
+
+  var empty = new L.tileLayer('');
+
+  var sed_qld_2017 = new L.GeoJSON.AJAX("https://raw.githubusercontent.com/jwood74/geographic_boundaries/main/au/sed/sed_qld/sed_qld_2017/sed_qld_2017.geojson", { style: style('red'), onEachFeature: onEachFeature });
+  var qld_search = new L.Control.Search({ layer: sed_qld_2017, propertyName: 'Name' });
+
+  var sed_vic_2014 = new L.GeoJSON.AJAX("https://raw.githubusercontent.com/jwood74/geographic_boundaries/main/au/sed/sed_vic/sed_vic_2014/sed_vic_2014.geojson", { style: style('red'), onEachFeature: onEachFeature });
+  var vic_search = new L.Control.Search({ layer: sed_vic_2014, propertyName: 'Name' });
+
+  var sed_wa_2019 = new L.GeoJSON.AJAX("https://raw.githubusercontent.com/jwood74/geographic_boundaries/main/au/sed/sed_wa/sed_wa_2019/sed_wa_2019.geojson", { style: style('red'), onEachFeature: onEachFeature });
+  var wa_search = new L.Control.Search({ layer: sed_wa_2019, propertyName: 'Name' });
+
+  var sed_nsw_2021 = new L.GeoJSON.AJAX("https://raw.githubusercontent.com/jwood74/geographic_boundaries/main/au/sed/sed_nsw/sed_nsw_2021/sed_nsw_2021.geojson", { style: style('red'), onEachFeature: onEachFeature });
+  var nsw_search = new L.Control.Search({ layer: sed_nsw_2021, propertyName: 'Name' });
+
+  var ced_2019 = new L.GeoJSON.AJAX("https://raw.githubusercontent.com/jwood74/geographic_boundaries/main/au/ced/ced_2019/ced_2019.geojson", { style: style('blue'), onEachFeature: onEachFeature });
+  var ced_search = new L.Control.Search({ layer: ced_2019, propertyName: 'Name' });
+
+  var ced_current = new L.GeoJSON.AJAX("https://raw.githubusercontent.com/jwood74/geographic_boundaries/main/au/ced/ced_current.geojson", { style: style('green'), onEachFeature: onEachFeature });
+  var ced_current_search = new L.Control.Search({ layer: ced_current, propertyName: 'Name' });
+
+  var overlayMaps = {
+    "Clear": empty,
+    "<span style='color:blue'>AU 2019</span>": ced_2019,
+    "<span style='color:green'>AU Current</span>": ced_current,
+    "NSW 2021": sed_nsw_2021,
+    "Vic 2014": sed_vic_2014,
+    "Qld 2017": sed_qld_2017,
+    "WA 2019": sed_wa_2019
+  };
+
+  L.control.layers(null, overlayMaps, { collapsed: false, position: 'topleft' }).addTo(map);
+
+  var info = L.control();
+
+  info.onAdd = function (map) {
+    this._div = L.DomUtil.create('div', 'info');
+    this.update();
+    return this._div;
+  };
+
+  info.update = function (props) {
+    this._div.innerHTML = '<h4>Electorate</h4>' + (props ?
+      '<b>' + props.Name + '</b>'
+      : 'Hover over an Electorate');
+  };
+
+  info.addTo(map);
+
+  map.on('overlayremove', function (eventLayer) {
+
+    var theLayer = eventLayer.name;
+
+    switch (theLayer) {
+      case 'Qld 2017':
+        clearCurrentSearch(qld_search)
+        layers.splice(layers.indexOf(sed_qld_2017), 1);
+        break;
+      case 'Vic 2014':
+        clearCurrentSearch(vic_search);
+        layers.splice(layers.indexOf(sed_vic_2014), 1);
+        break;
+      case 'WA 2019':
+        clearCurrentSearch(wa_search);
+        layers.splice(layers.indexOf(sed_wa_2019), 1);
+        break;
+      case 'NSW 2021':
+        clearCurrentSearch(nsw_search)
+        layers.splice(layers.indexOf(sed_nsw_2021), 1);
+        break;
+      case "<span style='color:blue'>AU 2019</span>":
+        clearCurrentSearch(ced_search)
+        layers.splice(layers.indexOf(ced_2019), 1);
+        break;
+      case "<span style='color:green'>AU Current</span>":
+        clearCurrentSearch(ced_current_search)
+        layers.splice(layers.indexOf(ced_current), 1);
+        break;
+      // case 'Clear':
+      //   clearCurrentSearch(currentSearch)
+      //   currentLayer = null
+    }
+    if (layers.indexOf(currentLayer) == -1) {
+      currentLayer = layers[layers.length - 1];
+    }
+    console.log(layers);
+  });
+
+  map.on('overlayadd', function (eventLayer) {
+
+    var theLayer = eventLayer.name;
+
+    switch (theLayer) {
+      case 'Qld 2017':
+        currentLayer = sed_qld_2017;
+        layers.push(currentLayer);
+        map.addControl(qld_search);
+        break;
+      case 'Vic 2014':
+        currentLayer = sed_vic_2014;
+        layers.push(currentLayer);
+        map.addControl(vic_search);
+        break;
+      case 'WA 2019':
+        currentLayer = sed_wa_2019;
+        layers.push(currentLayer);
+        map.addControl(wa_search);
+        break;
+      case 'NSW 2021':
+        currentLayer = sed_nsw_2021;
+        layers.push(currentLayer);
+        map.addControl(nsw_search);
+        break;
+      case "<span style='color:blue'>AU 2019</span>":
+        currentLayer = ced_2019;
+        layers.push(currentLayer);
+        map.addControl(ced_search);
+        break;
+      case "<span style='color:green'>AU Current</span>":
+        currentLayer = ced_current;
+        layers.push(currentLayer);
+        map.addControl(ced_current_search);
+        break;
+      // case 'Clear':
+      //   currentLayer = null
+      //   previousLayer = null
+    }
+    console.log(layers);
+  });
+
+</script>
+
+</html>

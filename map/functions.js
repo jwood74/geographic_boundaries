@@ -1,11 +1,11 @@
 function style(c) {
   return {
     fillColor: c,
-    weight: 2,
+    weight: 3,
     opacity: 1,
-    color: 'white',
-    dashArray: '3',
-    fillOpacity: 0.5
+    color: c,
+    dashArray: '6',
+    fillOpacity: 0.25
   };
 }
 
