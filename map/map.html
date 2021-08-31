@@ -60,22 +60,29 @@
   L.control.layers(baseMaps, null, { collapsed: false, position: 'topleft' }).addTo(map);
 
   var empty = new L.tileLayer('');
-  var sed_qld_2017 = new L.GeoJSON.AJAX("https://raw.githubusercontent.com/jwood74/geographic_boundaries/main/au/sed/sed_qld/sed_qld_2017/sed_qld_2017.geojson", { style: style('red'), onEachFeature: onEachFeature });
-  var sed_vic_2014 = new L.GeoJSON.AJAX("https://raw.githubusercontent.com/jwood74/geographic_boundaries/main/au/sed/sed_vic/sed_vic_2014/sed_vic_2014.geojson", { style: style('red'), onEachFeature: onEachFeature });
-  var sed_wa_2019 = new L.GeoJSON.AJAX("https://raw.githubusercontent.com/jwood74/geographic_boundaries/main/au/sed/sed_wa/sed_wa_2019/sed_wa_2019.geojson", { style: style('red'), onEachFeature: onEachFeature });
-  var ced_2019 = new L.GeoJSON.AJAX("https://raw.githubusercontent.com/jwood74/geographic_boundaries/main/au/ced/ced_2019/ced_2019.geojson", { style: style('blue'), onEachFeature: onEachFeature });
 
+  var sed_qld_2017 = new L.GeoJSON.AJAX("https://raw.githubusercontent.com/jwood74/geographic_boundaries/main/au/sed/sed_qld/sed_qld_2017/sed_qld_2017.geojson", { style: style('red'), onEachFeature: onEachFeature });
   var qld_search = new L.Control.Search({ layer: sed_qld_2017, propertyName: 'Name' });
+
+  var sed_vic_2014 = new L.GeoJSON.AJAX("https://raw.githubusercontent.com/jwood74/geographic_boundaries/main/au/sed/sed_vic/sed_vic_2014/sed_vic_2014.geojson", { style: style('red'), onEachFeature: onEachFeature });
   var vic_search = new L.Control.Search({ layer: sed_vic_2014, propertyName: 'Name' });
+
+  var sed_wa_2019 = new L.GeoJSON.AJAX("https://raw.githubusercontent.com/jwood74/geographic_boundaries/main/au/sed/sed_wa/sed_wa_2019/sed_wa_2019.geojson", { style: style('red'), onEachFeature: onEachFeature });
   var wa_search = new L.Control.Search({ layer: sed_wa_2019, propertyName: 'Name' });
+
+  var sed_nsw_2021 = new L.GeoJSON.AJAX("https://raw.githubusercontent.com/jwood74/geographic_boundaries/main/au/sed/sed_nsw/sed_nsw_2021/sed_nsw_2021.geojson", { style: style('red'), onEachFeature: onEachFeature });
+  var nsw_search = new L.Control.Search({ layer: sed_nsw_2021, propertyName: 'Name' });
+
+  var ced_2019 = new L.GeoJSON.AJAX("https://raw.githubusercontent.com/jwood74/geographic_boundaries/main/au/ced/ced_2019/ced_2019.geojson", { style: style('blue'), onEachFeature: onEachFeature });
   var ced_search = new L.Control.Search({ layer: ced_2019, propertyName: 'Name' });
 
   var overlayMaps = {
     "Clear": empty,
-    "Qld 2017": sed_qld_2017,
+    "AU 2019": ced_2019,
+    "NSW 2021": sed_nsw_2021,
     "Vic 2014": sed_vic_2014,
-    "WA 2019": sed_wa_2019,
-    "AU 2019": ced_2019
+    "Qld 2017": sed_qld_2017,
+    "WA 2019": sed_wa_2019
   };
 
   L.control.layers(overlayMaps, null, { collapsed: false, position: 'topleft' }).addTo(map);
@@ -117,6 +124,12 @@
         clearCurrentSearch(currentSearch)
         currentLayer = sed_wa_2019;
         currentSearch = wa_search
+        map.addControl(currentSearch);
+        break;
+      case 'NSW 2021':
+        clearCurrentSearch(currentSearch)
+        currentLayer = sed_nsw_2021;
+        currentSearch = nsw_search
         map.addControl(currentSearch);
         break;
       case 'AU 2019':
