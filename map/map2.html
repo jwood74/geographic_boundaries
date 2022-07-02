@@ -60,8 +60,6 @@
 
   L.control.layers(baseMaps, null, { collapsed: false, position: 'topleft' }).addTo(map);
 
-  var empty = new L.tileLayer('');
-
   var sed_qld_2017 = new L.GeoJSON.AJAX("https://raw.githubusercontent.com/jwood74/geographic_boundaries/main/au/sed/sed_qld/sed_qld_2017/sed_qld_2017.geojson", { style: style('red'), onEachFeature: onEachFeature });
   var qld_search = new L.Control.Search({ layer: sed_qld_2017, propertyName: 'Name' });
 
@@ -81,7 +79,6 @@
   var ced_current_search = new L.Control.Search({ layer: ced_current, propertyName: 'Name' });
 
   var overlayMaps = {
-    "Clear": empty,
     "<span style='color:blue'>AU 2019</span>": ced_2019,
     "<span style='color:green'>AU Current</span>": ced_current,
     "NSW 2021": sed_nsw_2021,
