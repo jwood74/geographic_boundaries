@@ -78,7 +78,7 @@
   var ced_current = new L.GeoJSON.AJAX("https://raw.githubusercontent.com/jwood74/geographic_boundaries/main/au/ced/ced_current.geojson", { style: style('green'), onEachFeature: onEachFeature });
   var ced_current_search = new L.Control.Search({ layer: ced_current, propertyName: 'Name' });
 
-  var ced_draft = new L.GeoJSON.AJAX("https://raw.githubusercontent.com/jwood74/geographic_boundaries/main/au/ced/ced_draft.geojson", { style: style('green'), onEachFeature: onEachFeature });
+  var ced_draft = new L.GeoJSON.AJAX("https://raw.githubusercontent.com/jwood74/geographic_boundaries/main/au/ced/ced_draft.geojson", { style: style('red'), onEachFeature: onEachFeature });
   var ced_draft_search = new L.Control.Search({ layer: ced_draft, propertyName: 'Name' });
 
   var overlayMaps = {
