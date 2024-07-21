@@ -1,7 +1,7 @@
-function style(c) {
+function style(c, s) {
   return {
     fillColor: c,
-    weight: 3,
+    weight: s,
     opacity: 1,
     color: c,
     dashArray: '6',
